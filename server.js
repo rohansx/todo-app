@@ -3,6 +3,7 @@ const fs = require("fs/promises")
 const utils = require("./utils/utils.js");
 const todoRouter = require("./routes/todos.routes.js");
 const viewsRouter = require("./routes/views.routes")
+const middlewares = require("./middlewares/index.js")
 
 // initialize the express app
 const app = express()
@@ -12,17 +13,14 @@ const app = express()
 app.set("view engine", "ejs")
 
 
-app.use(function(req,res,next){
-  console.log("New Request: ", new Date().toString())
-  next()
-})
+app.use(middlewares.logger)
 app.use(express.json())
 // Middleware to handle JSON-encoded request bodies
 app.use(express.json());
 
 app.get("/greetings", (req, res) => {
-    res.send("Hello, My project started!");
-  });
+  res.send("Hello, My project started!");
+});
 
 //view router
 app.use("/", viewsRouter)
@@ -60,7 +58,7 @@ app.use("/api/v1/todos", todoRouter)
 // // Route to create a new todo
 // app.post("/todos", (req, res) => {
 //     const newTodo = req.body;
-    
+
 //     // Validate the input
 //     if (!newTodo || !newTodo.title) {
 //         return res.status(400).json({
@@ -69,7 +67,7 @@ app.use("/api/v1/todos", todoRouter)
 //             error: "Todo title is required."
 //         });
 //     }
-    
+
 //     readData().then(data => {
 //         // append the new todo to the existing data
 //         data.push(newTodo);
@@ -92,5 +90,5 @@ app.use("/api/v1/todos", todoRouter)
 // });
 
 app.listen(3000, () => {
-    console.log("server is running on port 3000")
+  console.log("server is running on port 3000")
 });

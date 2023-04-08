@@ -1,18 +1,54 @@
 <%- include("partials/header.ejs")%>
 
 
-            <div class="container mt-3">
-                <div class="row">
-                    <div class="col">
-                        <% if todo.title %>
-                        <h1><%= todo.list %></h1>
-                        <p><%= todo.description %></p>
-                        <% } else {%>
-                            <h1>Not found</h1>
-                        <%} %> 
-                    </div>
+<div class="container mt-3">
+    <div class="row">
+        <div class="div">
+            <form>
+                <div class="mb-3">
+                    <label for="title" class="form-label">Enter Title</label>
+                    <input type="text" class="form-control" id="title" readonly required value="<%=todo.title%>">
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Enter Description</label>
+                    <textarea class="form-control" id="description" rows="3"
+                        required><%=todo.description%></textarea>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="completed" id="completedDone">
+                    <label class="form-check-label" for="completedDone">
+                        Mark Done
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="completed" id="completedNotDone" checked>
+                    <label class="form-check-label" for="completedFalse">
+                        Not Done
+                    </label>
+                </div>
+                <div class="form-check">
+                    <div class="text-center">
+                        <button class="btn btn-primary" type="button">Button</button>
+                      </div>
+                  </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const title = document.getElementById("title").value
+    const description = document.getElementById("description").value
+    const completed = document.getElementsByName("completed")[0].value
+
+    const body = {
+        title, 
+        description, 
+        completed: completedDone.value()
+    }
+    console.log(title, description, completed)
+</script>
             
 <%- include ("partials/footer.ejs") %>
 
