@@ -11,6 +11,12 @@ const app = express()
 // app.use("/assets", express.static("./assets"))
 app.set("view engine", "ejs")
 
+
+app.use(function(req,res,next){
+  console.log("New Request: ", new Date().toString())
+  next()
+})
+app.use(express.json())
 // Middleware to handle JSON-encoded request bodies
 app.use(express.json());
 
