@@ -1,107 +1,132 @@
 const express = require("express")
 const { body, validationResult } = require("express-validator")
+const JWT = require("jsonwebtoken")
 const router = express.Router()
-
+const bcrypt = require("bcryptjs")
 const USER = []
+const { writeUsers, readUsers } = require("../utils/utils")
+const { SECRET } = require("../config")
 
-router.post("/register",
-// custom validator 
-body("name").custom((name)=>{
-    if(typeof name === "string" && name.length >= 2){
-        return true
-    }
-    return false 
-})
-.withMessage("Name should be of minimum 2 characters."),
-body("email").custom((email)=>{
-    if(typeof email === "string"){
-        return true
-    }
-    return false 
-})  
-.withMessage("Please provide a valid email")
-.isEmail().withMessage("Enter a valid email"),
-body("password").custom((password)=>{
-    if(typeof password === "string" && password.length >= 8){
-        return true
-    }
-    return false 
-})
-.withMessage("Password should be atleast 8 characters"),
-(req, res)=>{
+router.post(
+	"/register",
+	body("name")
+		.custom((name) => {
+			if (typeof name === "string" && name.length >= 3) {
+				return true
+			}
+			return false
+		})
+		.withMessage("Name should be of minimum 3 characters."),
+	body("email")
+		.custom((email) => {
+			if (typeof email === "string") {
+				return true
+			}
+			return false
+		})
+		.withMessage("Please enter valid Email")
+		.isEmail()
+		.withMessage("Enter email in proper format. E.g example@xyz.com"),
+	body("password")
+		.custom((password) => {
+			if (typeof password === "string" && password.length >= 8) {
+				return true
+			}
+			return false
+		})
+		.withMessage("Password should be of minimum 8 characters."),
+	async (req, res) => {
+		const { name, email, password } = req.body
 
-    const {name, email, password } = req.body;
+		const errors = validationResult(req)
 
-    console.log("---post body---", name, email, password);
+		if (!errors.isEmpty()) {
+			return res.status(400).json({
+				message: "User registration failed.",
+				error: errors.array(),
+				data: {},
+			})
+		}
+		// try{
+		// const salt = await bcrypt.genSalt(10)
 
-    // to show errors in the response object
-    const errors = validationResult(req)
-    if(!errors.isEmpty()){
-        console.log("---erors---", errors);
-         return res.status(400).json({
-            message: "Registration failed.",
-            error: errors.array(),
-            data: {}
-         })
-    }
+		let hashedPassword = await bcrypt.hashSync(password, 10)
 
-    USER.push(
-        {
-            name,
-            email,
-            password
-        }
-    )
+		console.log(hashedPassword)
+		console.log(password)
+		USER.push({
+			name: name,
+			email: email,
+			password: hashedPassword,
+		})
+		writeUsers(USER)
 
-    // 201 for resource creation
-    return res.status(201).json({
-        message: "Success ! User registered",
-        data: {},
-        errors: null
-    })
-})
+		return res.status(201).json({
+			message: "User registration successful.",
+			error: null,
+			data: {
+				newUser,
+				access_token: token,
+				user: newUser.name,
+			},
+		})
 
-router.post("/login", (req, res) => {
-    const { email, password }= req.body
+		// catch (error) {
+		// 	console.error("Error: ", error.message)
+		// 	res.status(500).send("Internal server error occured.")
+		// }
+	}
+)
 
-    console.log("---post body---", email, password);
+router.post("/login", async (req, res) => {
+	const { email, password } = req.body
 
-    if(USER.length <= 0){
-        return res.status(404).json({
-            message: "User login failed.",
-            error: "User does not exist",
-            data: {}
-        })
-    }
+	console.log("---user info ---", email, password)
+	let users = await readUsers()
+	console.log(users)
 
-    // this is not a very good approach due to nesting of lots of if conditions
-    // else if (USER.find(user => user.email === email){
-    //     if(password)
-    // })
+	USER.push(...users)
+	if (USER.length <= 0) {
+		return res.status(400).json({
+			message: "User login failed.",
+			error: "User does not exists.",
+			data: {},
+		})
+	}
 
-    const userIndex = USER.findIndex((user) => user.email === email)
-    if(userIndex === -1){
-        return res.status(404).json({
-            message: "User login failed.",
-            error: "The user does not exist",
-            data: {}
-        })
-    }
-    if(USER[userIndex].password != password){
-        return res.status(404).json({
-            message: "User login failed.",
-            error: "Password does not match",
-            data: {}
-        })
+	const userIndex = USER.findIndex((user) => user.email === email)
 
-    }
+	if (userIndex === -1) {
+		return res.status(404).json({
+			message: "User login failed.",
+			error: "User not found.",
+			data: {},
+		})
+	}
+	var match = bcrypt.compareSync(password, USER[userIndex].password)
 
-    // 200 for successfull check
-    return res.status(200).json({
-        message: "Success ! User logged in",
-        data: {},
-        errors: null
-    })
+	console.log(password)
+	console.log(password)
+
+	if (match === false) {
+		return res.status(404).json({
+			message: "User login failed.",
+			error: "Invalid password.",
+			data: {},
+		})
+	}
+	// create access tokens
+	// response to clientjwt npm
+
+	const token = JWT.sign({ email }, SECRET)
+
+	return res.status(200).json({
+		message: "User login successful.",
+		error: null,
+		data: {
+			access_token: token,
+		},
+	})
 })
 
 module.exports = router

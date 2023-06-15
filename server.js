@@ -1,46 +1,33 @@
 const express = require("express")
-const todoRoute = require("./routes/todos.routes")
-const viewsRouter = require("./routes/view.routes")
+const fs = require("fs/promises")
+const utils = require("./utils/utils")
+const todoRouter = require("./routes/todos.routes")
 const authRouter = require("./routes/auth.routes")
+const viewsRouter = require("./routes/views.routes")
 const middlewares = require("./middlewares/index")
 
-// initialize express app
+// initialize the express app
 const app = express()
 
-// mounting view engine to get extra capability of using EJS
-// setting the view engine of express app to ejs (by default it is HTML)
+// set view engine
 app.set("view engine", "ejs")
 
 // middlewares
-
-// middleware #1
-// making logger
-// app.user() having no path "" but has a function
-// using a function in it makes it a middleware
 app.use(middlewares.logger)
-
-// middleware #2
-// **VERY IMP - this is used to collect data from req.body in chunks
-// without this the body parsing would be undefined in the POST calls
 app.use(express.json())
 
-// making a greeting call to check server is running or not
-app.get("/greeting", (req, res) => {
-    return res.send("Greetings from Todo app.")
+// hello world API call for our server/app
+app.get("/greetings", (req, res) => {
+    return res.send("Greetings from Todo App.")
 })
 
-// VIEWS ROUTERS
+// view routers
 app.use("/", viewsRouter)
 
-// API ROUTERS
-
-// THIS IS BASE URL
-// http://localhost:3000/todos
-
-// app.use("/todos", todoRoute.router) // if using const todoRoute = require() along with module.exports = { router: todoRouter }
-app.use("/api/todos", todoRoute) // if module.exports = todoRouter
-app.use("/api/v1/auth", authRouter) 
+// api routers
+app.use("/api/v1/todos", todoRouter)
+app.use("/api/v1/auth", authRouter)
 
 app.listen(3000, () => {
-    console.log("Todo server is running");
+    console.log("server is running on port 3000")
 })

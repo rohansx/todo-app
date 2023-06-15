@@ -1,92 +1,88 @@
-<%- include("partials/header") %>
-    <div class="container mt-3">
-        <div class="row">
-        </div>
-    </div>
+<%- include("partials/header.ejs") %>
+
     <div class="container mt-3">
         <div class="row">
             <div class="col">
-                <h1>Add a todo</h1>
-                <div class="div">
-                    <form id="todoAddTodoForm">
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Enter Title</label>
-                            <input type="text" class="form-control" id="title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Enter
-                                Description</label>
-                            <textarea class="form-control" id="description"
-                                rows="3"
-                                required></textarea>
-                        </div>
-
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio"
-                                name="completed" id="completedDone"/>
-                            <label class="form-check-label" for="completedDone">
-                                Mark Done
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio"
-                                name="completed" id="completedNotDone" checked/>
-                            <label class="form-check-label"
-                                for="completedFalse">
-                                Not Done
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <div class="text-center">
-                                <input class="btn btn-primary" type="submit"
-                                    value="Add" />
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                <h3 class="my-2">Add a new Todo</h3>
+                <form id="todoSubmitForm">
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Enter Title:</label>
+                        <input class="form-control" type="text" name="title" id="title" placeholder="write something..."
+                            required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="description">Enter Description:</label>
+                        <textarea class="form-control" name="description" id="description" rows="3"
+                            placeholder="write something..." required></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="completedRadio" id="completedDone" />
+                        <label class="form-check-label" for="completedDone">Mark done</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="completedRadio" id="completedNotDone"
+                            checked />
+                        <label class="form-check-label" for="completedNotDone">Mark undone</label>
+                    </div>
+                    <div class="form-check"></div>
+                    <div class="text-center" style="width: 100%;">
+                        <input class="btn btn-primary my-3" type="submit" style="width: 50%;" />
+                    </div>
             </div>
+            <hr />
+            </form>
         </div>
     </div>
-
+    </div>
     <script>
-            document.getElementById("todoAddTodoForm").addEventListener("submit", function(event){
-                event.preventDefault()
-                console.log("submittig");
+        document.getElementById("todoSubmitForm").addEventListener("submit", function (event) {
+            event.preventDefault()
 
-                const title = document.getElementById("title").value
-                const description = document.getElementById("description").value
-                const completedDone = document.getElementById("completedDone")
+            const title = document.getElementById("title").value
+            const description = document.getElementById("description").value
+            const completedDone = document.getElementById("completedDone")
 
-                // console.log("checkbox is ", completedDone.checked);
-                // console.log("checkbox is ", title.value);
-                const body = {
-                    title,
-                    description,
-                    completed: completedDone.checked ? true : false 
-                }
+            const body = {
+                title,
+                description,
+                completed: completedDone.checked ? true : false
+            }
 
-                // fetch(`http://localhost:3000/api/todos/${title}`, {
-                fetch(`/api/todos/`, {
+            let token = localStorage.getItem("access_token")
+
+            fetch(
+                "/api/v1/todos",
+                {
                     method: "POST",
-                    // without header the request payload will be [object Object]
                     headers: {
-                        "Accept" : "application/json",
-                        "Content-type": "application/json"
+                        "Accept": "application/json",
+                        "Content-type": "application/json",
+                        "Authorization": token
                     },
                     body: JSON.stringify(body)
+                }
+            )
+                .then((response) => {
+                    console.log("---token response--- ", token, response.status)
+
+                    return response.json()
+                        .then((data) => {
+                            if (data.redirect) {
+                                alert("You are not logged in, redirecting to login page.")
+                                window.location.href = "/auth/login"
+                                return
+                            }
+                            if (data.error) {
+                                const errorString = JSON.stringify(data.error)
+                                alert(errorString)
+                            } else {
+                                alert(data.message)
+                            }
+                        })
                 })
-                // fetch is a promise so need to resolve it
-                .then((response) => response.json())
-                .then((data) => {
-                    if(data.error){
-                        const errorString = JSON.stringify(data.error)
-                        alert(errorString)
-                    }
-                    else{
-                        alert(data.message)
-                    }
-                })
-                .catch((error)=> alert(error.toString()))
-            })
-        </script>
-    <%- include("partials/footer") %>
+                .catch((error) => alert(error.toString()))
+        })
+    </script>
+
+
+    <%- include("partials/footer.ejs") %>
