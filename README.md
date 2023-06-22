@@ -24,9 +24,34 @@
 
   <h2>Cloning and Installation</h2>
   <ol>
-    <li>Clone the repository to your local machine:</li>
+    Clone the repository to your local machine:
   </ol>
 
   ```bash
   git clone https://github.com/rohansx/todo-app.git
+  ```
+  
+  <ol>
+    Change the directory:
+  </ol>
 
+  ```bash
+  cd todo-app
+```
+  
+  
+  <ol>
+    Install the dependencies:
+  </ol>
+  
+  ```bash
+  npm i 
+```
+  
+ <ol>
+    Run the project:
+  </ol>
+  
+  ```bash
+  npm start
+```
